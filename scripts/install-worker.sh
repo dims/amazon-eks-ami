@@ -74,9 +74,6 @@ sudo yum install -y \
   mdadm \
   pigz
 
-# Remove any old kernel versions. `--count=1` here means "only leave 1 kernel version installed"
-sudo package-cleanup --oldkernels --count=1 -y
-
 sudo yum versionlock kernel-$(uname -r)
 
 # Remove the ec2-net-utils package, if it's installed. This package interferes with the route setup on the instance.
