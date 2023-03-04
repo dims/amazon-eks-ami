@@ -3,6 +3,7 @@ MAKEFILE_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 PACKER_DEFAULT_VARIABLE_FILE ?= $(MAKEFILE_DIR)/eks-worker-al2-variables.json
 PACKER_TEMPLATE_FILE ?= $(MAKEFILE_DIR)/eks-worker-al2.json
 PACKER_BINARY ?= packer
+
 AVAILABLE_PACKER_VARIABLES := $(shell $(PACKER_BINARY) inspect -machine-readable $(PACKER_TEMPLATE_FILE) | grep 'template-variable' | awk -F ',' '{print $$4}')
 
 K8S_VERSION_PARTS := $(subst ., ,$(kubernetes_version))
@@ -128,6 +129,10 @@ k8s: validate ## Build default K8s version of EKS Optimized AL2 AMI
 clean:
 	rm *-manifest.json
 	rm *-version-info.json
+
+.PHONY: 1.25-al2023
+1.25-al2023:
+	$(MAKE) k8s kubernetes_version=1.25.6 kubernetes_build_date=2023-01-30 pull_cni_from_github=true PACKER_TEMPLATE_FILE=eks-worker-al2023.json PACKER_DEFAULT_VARIABLE_FILE=eks-worker-al2023-variables.json
 
 .PHONY: help
 help: ## Display help
