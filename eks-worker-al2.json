@@ -1,5 +1,5 @@
 {
-  "_comment": "All template variables are enumerated here; and most variables have a default value defined in eks-worker-al2023-variables.json",
+  "_comment": "All template variables are enumerated here; and most variables have a default value defined in eks-worker-al2-variables.json",
   "variables": {
     "additional_yum_repos": null,
     "ami_component_description": null,    
@@ -19,6 +19,7 @@
     "cni_plugin_version": null,
     "containerd_version": null,
     "creator": null,
+    "docker_version": null,
     "encrypted": null,
     "instance_type": null,
     "kernel_version": null,
@@ -82,24 +83,9 @@
         "delay_seconds": 30,
         "max_attempts": 90
       },
-      "temporary_iam_instance_profile_policy_document": {
-        "Version": "2012-10-17",
-        "Statement": [
-          {
-            "Action": [
-              "logs:*"
-            ],
-            "Effect": "Allow",
-            "Resource": [
-              "*"
-            ]
-          }
-        ]
-      },
       "ami_regions": "{{user `ami_regions`}}",
       "ssh_username": "{{user `ssh_username`}}",
       "ssh_interface": "{{user `ssh_interface`}}",
-      "temporary_key_pair_type": "ed25519",
       "temporary_security_group_source_cidrs": "{{user `temporary_security_group_source_cidrs`}}",
       "security_group_id": "{{user `security_group_id`}}",
       "associate_public_ip_address": "{{user `associate_public_ip_address`}}",
@@ -161,14 +147,24 @@
     {
       "type": "shell",
       "remote_folder": "{{ user `remote_folder`}}",
+      "expect_disconnect": true,
+      "pause_after": "90s",
+      "script": "{{template_dir}}/scripts/upgrade_kernel.sh",
+      "environment_vars": [
+        "KUBERNETES_VERSION={{user `kubernetes_version`}}",
+        "KERNEL_VERSION={{user `kernel_version`}}"
+      ]
+    },
+    {
+      "type": "shell",
+      "remote_folder": "{{ user `remote_folder`}}",
       "script": "{{template_dir}}/scripts/install-worker.sh",
       "environment_vars": [
         "KUBERNETES_VERSION={{user `kubernetes_version`}}",
         "KUBERNETES_BUILD_DATE={{user `kubernetes_build_date`}}",
         "BINARY_BUCKET_NAME={{user `binary_bucket_name`}}",
         "BINARY_BUCKET_REGION={{user `binary_bucket_region`}}",
-        "DOCKER_VERSION=none",
-        "INSTALL_DOCKER=false",
+        "DOCKER_VERSION={{user `docker_version`}}",
         "CONTAINERD_VERSION={{user `containerd_version`}}",
         "RUNC_VERSION={{user `runc_version`}}",
         "CNI_PLUGIN_VERSION={{user `cni_plugin_version`}}",
