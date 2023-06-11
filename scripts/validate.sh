@@ -48,10 +48,16 @@ fi
 echo "Verifying that the package versionlocks are correct..."
 
 function versionlock-entries() {
-  # the format of this output is EPOCH:NAME-VERSION-RELEASE.ARCH
-  # more info in yum-versionlock(1)
-  # rpm doesn't accept EPOCH when querying the db, so remove it
-  yum versionlock list --quiet | cut -d ':' -f2
+  if [ -f "/etc/dnf/plugins/versionlock.conf" ]; then
+    # the format of this output in al2023 is NAME-EPOCH:VERSION-RELEASE.ARCH
+    # rpm works fine with this format
+    yum versionlock list --quiet
+  else
+    # the format of this output is EPOCH:NAME-VERSION-RELEASE.ARCH
+    # more info in yum-versionlock(1)
+    # rpm doesn't accept EPOCH when querying the db, so remove it
+    yum versionlock list --quiet | cut -d ':' -f2
+  fi
 }
 
 function versionlock-packages() {
