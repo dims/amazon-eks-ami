@@ -130,9 +130,9 @@ clean:
 	rm *-manifest.json
 	rm *-version-info.json
 
-.PHONY: 1.25-al2023
-1.25-al2023:
-	$(MAKE) k8s kubernetes_version=1.25.6 kubernetes_build_date=2023-01-30 pull_cni_from_github=true PACKER_TEMPLATE_FILE=eks-worker-al2023.json PACKER_DEFAULT_VARIABLE_FILE=eks-worker-al2023-variables.json
+.PHONY: 1.27-al2023
+1.27-al2023: ## Build EKS Optimized AL2023 AMI - K8s 1.27
+	$(MAKE) k8s kubernetes_version=1.27.1 kubernetes_build_date=2023-04-19 pull_cni_from_github=true PACKER_TEMPLATE_FILE=eks-worker-al2023.json PACKER_DEFAULT_VARIABLE_FILE=eks-worker-al2023-variables.json
 
 .PHONY: help
 help: ## Display help
