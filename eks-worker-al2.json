@@ -164,7 +164,6 @@
         "KUBERNETES_BUILD_DATE={{user `kubernetes_build_date`}}",
         "BINARY_BUCKET_NAME={{user `binary_bucket_name`}}",
         "BINARY_BUCKET_REGION={{user `binary_bucket_region`}}",
-        "DOCKER_VERSION={{user `docker_version`}}",
         "CONTAINERD_VERSION={{user `containerd_version`}}",
         "RUNC_VERSION={{user `runc_version`}}",
         "CNI_PLUGIN_VERSION={{user `cni_plugin_version`}}",
