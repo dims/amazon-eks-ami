@@ -61,7 +61,6 @@ sudo yum install -y \
   conntrack \
   ec2-instance-connect \
   ethtool \
-  ipvsadm \
   jq \
   nfs-utils \
   socat \
