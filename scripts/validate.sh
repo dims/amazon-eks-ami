@@ -58,6 +58,9 @@ function versionlock-packages() {
   versionlock-entries | xargs -I '{}' rpm --query '{}' --queryformat '%{NAME}\n'
 }
 
+# FIXME(dims): Remove next line, used for debugging
+yum versionlock list
+
 for ENTRY in $(versionlock-entries); do
   if ! rpm --query "$ENTRY" &> /dev/null; then
     echo "There is no package matching the versionlock entry: '$ENTRY'"
