@@ -71,6 +71,9 @@ sudo yum install -y \
   mdadm \
   pigz
 
+# Install iptables-legacy for al2023 if available
+(yum list available | grep -qw iptables-legacy) || sudo yum -y install iptables-legacy
+
 sudo yum versionlock kernel-$(uname -r)
 
 # Remove the ec2-net-utils package, if it's installed. This package interferes with the route setup on the instance.
