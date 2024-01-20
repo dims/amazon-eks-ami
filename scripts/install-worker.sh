@@ -75,7 +75,8 @@ sudo yum install -y \
   unzip \
   wget \
   mdadm \
-  pigz
+  pigz \
+  fuse
 
 # skip kernel version cleanup on al2023
 if ! cat /etc/*release | grep "al2023" > /dev/null 2>&1; then
@@ -174,6 +175,9 @@ sudo yum versionlock runc-*
 sudo yum install -y containerd-${CONTAINERD_VERSION}
 sudo yum versionlock containerd-*
 
+# install soci snapshotter
+curl --fail --location "https://github.com/awslabs/soci-snapshotter/releases/download/v0.5.0/soci-snapshotter-0.5.0-linux-${ARCH}.tar.gz" | sudo tar -C /usr/bin -zxf -
+
 sudo mkdir -p /etc/eks/containerd
 if [ -f "/etc/eks/containerd/containerd-config.toml" ]; then
   ## this means we are building a gpu ami and have already placed a containerd configuration file in /etc/eks
@@ -184,6 +188,8 @@ fi
 
 sudo mv $WORKING_DIR/kubelet-containerd.service /etc/eks/containerd/kubelet-containerd.service
 sudo mv $WORKING_DIR/sandbox-image.service /etc/eks/containerd/sandbox-image.service
+sudo mv $WORKING_DIR/soci-snapshotter.service /etc/eks/containerd/soci-snapshotter.service
+sudo mv $WORKING_DIR/soci-config.toml /etc/eks/containerd/soci-config.toml
 sudo mv $WORKING_DIR/pull-sandbox-image.sh /etc/eks/containerd/pull-sandbox-image.sh
 sudo mv $WORKING_DIR/pull-image.sh /etc/eks/containerd/pull-image.sh
 sudo chmod +x /etc/eks/containerd/pull-sandbox-image.sh
@@ -412,11 +418,14 @@ if [[ "$CACHE_CONTAINER_IMAGES" == "true" ]] && ! [[ ${ISOLATED_REGIONS} =~ $BIN
   PAUSE_CONTAINER="${ECR_URI}/eks/pause:${PAUSE_CONTAINER_VERSION}"
   cat /etc/eks/containerd/containerd-config.toml | sed s,SANDBOX_IMAGE,$PAUSE_CONTAINER,g | sudo tee /etc/eks/containerd/containerd-cached-pause-config.toml
   sudo cp -v /etc/eks/containerd/containerd-cached-pause-config.toml /etc/containerd/config.toml
+  sudo cp -v /etc/eks/containerd/soci-config.toml /etc/containerd/soci-config.toml
+  sudo cp -v /etc/eks/containerd/soci-snapshotter.service /etc/systemd/system/soci-snapshotter.service
+  sudo chown root:root /etc/systemd/system/soci-snapshotter.service
   sudo cp -v /etc/eks/containerd/sandbox-image.service /etc/systemd/system/sandbox-image.service
   sudo chown root:root /etc/systemd/system/sandbox-image.service
   sudo systemctl daemon-reload
   sudo systemctl start containerd
-  sudo systemctl enable containerd sandbox-image
+  sudo systemctl enable containerd sandbox-image soci-snapshotter
 
   K8S_MINOR_VERSION=$(echo "${KUBERNETES_VERSION}" | cut -d'.' -f1-2)
 

@@ -7,7 +7,13 @@ address = "/run/containerd/containerd.sock"
 
 [plugins."io.containerd.grpc.v1.cri".containerd]
 default_runtime_name = "runc"
+# discard_unpacked_layers allows GC to remove layers from the content store after
+# successfully unpacking these layers to the snapshotter.
 discard_unpacked_layers = true
+# disable_snapshot_annotations disables to pass additional annotations (image
+# related information) to snapshotters. These annotations are required by
+# soci snapshotter
+disable_snapshot_annotations = false
 
 [plugins."io.containerd.grpc.v1.cri"]
 sandbox_image = "SANDBOX_IMAGE"
@@ -24,3 +30,15 @@ SystemdCgroup = true
 [plugins."io.containerd.grpc.v1.cri".cni]
 bin_dir = "/opt/cni/bin"
 conf_dir = "/etc/cni/net.d"
+
+# Create a dedicated runtime class for SOCI
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.soci-runtime]
+runtime_type = "io.containerd.runc.v2"
+snapshotter = "soci"
+
+# Configure the SOCI Snapshotter as a Remote Snapshotter for containerd
+[plugins]
+[proxy_plugins.soci]
+type = "snapshot"
+address = "/run/soci-snapshotter-grpc/soci-snapshotter-grpc.sock"
+

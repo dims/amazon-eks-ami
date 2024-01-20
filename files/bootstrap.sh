@@ -574,16 +574,22 @@ if [[ "$CONTAINER_RUNTIME" = "containerd" ]]; then
   # If different, then restart containerd w/ proper config
   if ! cmp -s /etc/eks/containerd/containerd-config.toml /etc/containerd/config.toml; then
     sudo cp -v /etc/eks/containerd/containerd-config.toml /etc/containerd/config.toml
+    sudo cp -v /etc/eks/containerd/soci-config.toml /etc/containerd/soci-config.toml
+    sudo cp -v /etc/eks/containerd/soci-snapshotter.service /etc/systemd/system/soci-snapshotter.service
+    sudo chown root:root /etc/systemd/system/soci-snapshotter.service
     sudo cp -v /etc/eks/containerd/sandbox-image.service /etc/systemd/system/sandbox-image.service
     sudo chown root:root /etc/systemd/system/sandbox-image.service
     systemctl daemon-reload
-    systemctl enable containerd sandbox-image
-    systemctl restart sandbox-image containerd
+    systemctl enable containerd sandbox-image soci-snapshotter
+    systemctl restart sandbox-image containerd soci-snapshotter
   fi
   sudo cp -v /etc/eks/containerd/kubelet-containerd.service /etc/systemd/system/kubelet.service
   sudo chown root:root /etc/systemd/system/kubelet.service
   # Validate containerd config
   sudo containerd config dump > /dev/null
+
+  # Ensure the pause image is loaded through the snapshotter
+  sudo nerdctl --namespace k8s.io pull --snapshotter soci "$(containerd config default | grep sandbox_image | sed 's/.*= //; s/"//g')"
 
   # --container-runtime flag is gone in 1.27+
   # TODO: remove this when 1.26 is EOL
